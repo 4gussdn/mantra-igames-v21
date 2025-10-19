@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mantra iGames v2.1+ — Prototype</title>
+<style>
+:root{
+  --bg1: #eaf0fb;
+  --bg2: #f3f7ff;
+  --card:#ffffff;
+  --muted:#78808b;
+  --accent:#4aa3ff;
+  --accent-2:#7fb8ff;
+  --success:#32d74b;
+  --gold:#ffd60a;
+  --round:14px;
+}
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:#071222;-webkit-font-smoothing:antialiased;}
+.header{padding:18px;text-align:center;}
+.logo{font-weight:800;font-size:20px;color:#062039;}
+.container{max-width:1100px;margin:0 auto;padding:12px;}
+.note{color:var(--muted);text-align:center;margin-bottom:10px;font-size:14px;}
+.grid{display:grid;grid-template-columns:1fr;gap:12px;}
+@media(min-width:700px){ .grid{grid-template-columns:repeat(2,1fr);} }
+@media(min-width:1100px){ .grid{grid-template-columns:repeat(5,1fr);} }
+
+.card{border-radius:var(--round);padding:14px;background:linear-gradient(180deg,rgba(255,255,255,0.95),rgba(245,252,ff,0.6));box-shadow:0 10px 30px rgba(10,20,40,0.06);display:flex;flex-direction:column;gap:8px;min-height:170px;position:relative;overflow:hidden;}
+.sil{width:64px;height:104px;border-radius:12px;background:linear-gradient(180deg,#fff,#eef6ff);border:2px solid rgba(10,70,120,0.06);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted);margin-bottom:6px;}
+.unit-row{display:flex;gap:12px;align-items:center;}
+.unit-name{font-weight:800;font-size:16px;color:#072034;}
+.status{font-size:13px;color:var(--muted);margin-top:2px;}
+.timer{font-size:22px;font-weight:800;color:#06243b;margin-top:6px;}
+.price{font-size:16px;font-weight:700;color:#042a4d;margin-top:6px;}
+.inputs{display:flex;gap:8px;flex-wrap:wrap;}
+.input-text{padding:8px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);min-width:140px;}
+.controls{margin-top:auto;display:flex;gap:8px;align-items:center;justify-content:flex-end;}
+.btn{border:0;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer;background:var(--accent);color:white;box-shadow:0 8px 20px rgba(74,163,255,0.12);}
+.btn-ghost{background:transparent;color:var(--accent);border:1px solid rgba(74,163,255,0.12);padding:8px 12px;border-radius:12px;}
+.small{font-size:13px;padding:6px 10px;border-radius:9px;}
+.indicator{position:absolute;right:12px;top:12px;width:14px;height:14px;border-radius:999px;background:rgba(0,0,0,0.06);}
+.ind-active{background:var(--success);}
+.ind-idle{background:var(--muted);}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--card);padding:16px;border-radius:12px;box-shadow:0 20px 50px rgba(10,20,40,0.18);width:92%;max-width:420px;z-index:60;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.25);z-index:55;}
+.modal h3{margin:0 0 8px 0;font-size:18px;}
+.modal .big{font-size:28px;font-weight:800;margin-top:6px;}
+.footer{margin-top:12px;text-align:center;}
+.small-muted{color:var(--muted);font-size:13px;}
+.admin-panel{margin-top:16px;background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(10,20,40,0.05);}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th{ text-align:left;padding:8px 6px;color:var(--muted);font-weight:700}
+.table td{padding:8px 6px;border-top:1px solid rgba(0,0,0,0.04)}
+.kpi{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.kpi .k{background:#fff;padding:10px;border-radius:10px;box-shadow:0 6px 18px rgba(10,20,40,0.05);min-width:140px}
+
+.badge{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;padding:6px 10px;border-radius:999px;font-weight:800}
+</style>
+</head>
+<body>
+<div class="header"><div class="logo">Mantra iGames</div></div>
+<div class="container">
+  <div class="note">Mode: <strong>Stopwatch (v2.1+)</strong> — Harga estimasi tampil real-time per menit (dibulatkan ke Rp100). Harga final dihitung saat Stop.</div>
+  <div class="grid" id="grid"></div>
+
+  <div style="text-align:center;margin-top:12px;">
+    <button id="btn-admin" class="btn-ghost">Dashboard Admin</button>
+  </div>
+
+  <div id="adminPanel" class="admin-panel" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:800">Admin Dashboard</div>
+      <div class="small-muted">Ringkasan 30 hari</div>
+    </div>
+    <div class="kpi" id="kpis"></div>
+    <div style="margin-top:12px;font-weight:800">History Terbaru</div>
+    <table class="table" id="historyTable"><thead><tr><th>Tanggal</th><th>Unit</th><th>Penyewa</th><th>Paket</th><th>Durasi(jam)</th><th>Harga</th></tr></thead><tbody></tbody></table>
+    <div style="margin-top:10px;display:flex;gap:8px"><button id="exportCsv" class="btn">Export CSV</button><button id="clearHist" class="btn-ghost">Clear History</button><button id="resetAll" class="btn-ghost">Reset All</button></div>
+    <div class="small-muted" style="margin-top:8px">Data disimpan di browser (localStorage). Untuk sinkronisasi antar device, perlu hosting.</div>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" style="display:none"></div>
+<div id="modal" class="modal" style="display:none"></div>
+
+<script>
+// Config
+const UNITS = ['MiG01','MiG02','MiG03','MiG04','MiG05']; // initial 5 units
+const PACKS = [
+  {minutes:60, price:10000},
+  {minutes:180, price:25000},
+  {minutes:300, price:40000},
+  {minutes:720, price:80000},
+  {minutes:1440, price:120000},
+  {minutes:10080, price:700000},
+  {minutes:43200, price:2400000}
+];
+const PER_MIN = PACKS[0].price / 60; // 10000/60
+
+const stateKey = u=> 'mig21_state_' + u;
+const historyKey = 'mig21_history_v1';
+
+function now(){return Date.now();}
+function fmtMoney(n){ return 'Rp ' + Number(n).toLocaleString(); }
+function msToHMS(ms){ if(ms<=0) return '00:00:00'; let s=Math.floor(ms/1000); const h=Math.floor(s/3600); s%=3600; const m=Math.floor(s/60); const sec=s%60; return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'); }
+
+function saveState(u,s){ localStorage.setItem(stateKey(u), JSON.stringify(s)); broadcast(u); }
+function loadState(u){ const v=localStorage.getItem(stateKey(u)); return v?JSON.parse(v):{status:'idle', start:0, acc:0, name:'', lastPrice:0}; }
+function saveHistory(h){ let hist = JSON.parse(localStorage.getItem(historyKey)||'[]'); hist.unshift(h); localStorage.setItem(historyKey, JSON.stringify(hist)); broadcast('hist'); }
+function loadHistory(){ return JSON.parse(localStorage.getItem(historyKey)||'[]'); }
+function broadcast(k){ try{ localStorage.setItem('mig21_bcast_'+k, Date.now()); }catch(e){} }
+
+// init states
+UNITS.forEach(u=>{ if(!localStorage.getItem(stateKey(u))) saveState(u,{status:'idle', start:0, acc:0, name:'', lastPrice:0}); });
+
+// compute price per logic hybrid with per-minute granularity
+function computePriceFromMinutes(minutes){
+  const ROUND_TO = 100;
+  if(minutes <= 0) return {minutes:0, raw:0, price:0, pack:'0m'};
+  // find highest pack <= minutes
+  let base = null;
+  for(let i=PACKS.length-1;i>=0;i--){
+    if(minutes >= PACKS[i].minutes){ base = PACKS[i]; break; }
+  }
+  let raw;
+  let packLabel;
+  if(!base){
+    raw = minutes * PER_MIN;
+    packLabel = 'Per-menit';
+  } else {
+    const extra = minutes - base.minutes;
+    raw = base.price + extra * PER_MIN;
+    packLabel = (base.minutes >= 60) ? (base.minutes/60)+'h' : base.minutes+'m';
+  }
+  const rounded = Math.round(raw / ROUND_TO) * ROUND_TO;
+  return {minutes, raw, price: rounded, pack: packLabel};
+}
+
+// render grid
+const grid = document.getElementById('grid');
+function renderGrid(){
+  grid.innerHTML='';
+  UNITS.forEach((u, idx)=>{
+    const s = loadState(u);
+    const elapsedMs = s.status==='active' ? (now()-s.start + s.acc) : (s.status==='paused' ? s.acc : 0);
+    const minutes = Math.floor(elapsedMs/60000);
+    const estimate = computePriceFromMinutes(minutes);
+    const statusLabel = s.status==='idle' ? 'Tersedia' : (s.status==='active' ? 'Digunakan' : 'Paused');
+    const card = document.createElement('div'); card.className='card';
+    card.innerHTML = `
+      <div class="unit-row">
+        <div class="sil">${u}</div>
+        <div style="flex:1">
+          <div class="unit-name">${u}</div>
+          <div class="status" id="${u}-status">Status: ${statusLabel}</div>
+          <div class="timer" id="${u}-timer">${s.status!=='idle' ? msToHMS(elapsedMs) : '--:--:--'}</div>
+          <div class="price" id="${u}-price">${estimate.price>0? fmtMoney(estimate.price) : '-' } <span style="color:var(--muted);font-weight:600;font-size:12px"> • ${estimate.pack}</span></div>
+          <div class="small-muted" style="margin-top:6px">Penyewa: <input class="input-text" id="${u}-name" placeholder="Nama penyewa" value="${s.name || ''}" /></div>
+        </div>
+      </div>
+      <div class="controls">
+        <div style="display:flex;gap:8px;flex-direction:column;align-items:flex-end">
+          <button class="btn small" id="${u}-start">${s.status==='active'?'Running':'Start'}</button>
+          <button class="btn-ghost small" id="${u}-pause">${s.status==='paused'?'Resume':'Pause'}</button>
+          <button class="btn-ghost small" id="${u}-stop">Stop</button>
+          <button class="btn-ghost small" id="${u}-reset">Reset</button>
+        </div>
+      </div>
+      <div class="indicator ${s.status==='active'?'ind-active':'ind-idle'}" title="${statusLabel}"></div>
+    `;
+    grid.appendChild(card);
+
+    // wire buttons & input
+    document.getElementById(`${u}-start`).addEventListener('click', ()=> startUnit(u));
+    document.getElementById(`${u}-pause`).addEventListener('click', ()=> pauseResumeUnit(u));
+    document.getElementById(`${u}-stop`).addEventListener('click', ()=> stopUnit(u));
+    document.getElementById(`${u}-reset`).addEventListener('click', ()=> resetUnit(u));
+    document.getElementById(`${u}-name`).addEventListener('change', (e)=>{ const st=loadState(u); st.name = e.target.value; saveState(u,st); });
+  });
+}
+renderGrid();
+
+// unit controls
+function startUnit(u){
+  const s = loadState(u);
+  if(s.status==='active') return alert('Unit sudah aktif');
+  s.status='active'; s.start = now(); // acc remains previous accumulated
+  saveState(u,s);
+  renderGrid();
+  renderAdmin();
+}
+function pauseResumeUnit(u){
+  const s = loadState(u);
+  if(s.status==='active'){
+    s.acc = now() - s.start + s.acc;
+    s.start = 0; s.status='paused';
+    saveState(u,s);
+  } else if(s.status==='paused'){
+    s.start = now(); s.status='active'; saveState(u,s);
+  } else {
+    alert('Unit belum aktif');
+  }
+  renderGrid(); renderAdmin();
+}
+function resetUnit(u){
+  if(!confirm('Reset timer & data untuk '+u+' ?')) return;
+  saveState(u,{status:'idle', start:0, acc:0, name:'', lastPrice:0});
+  renderGrid(); renderAdmin();
+}
+function stopUnit(u){
+  const s = loadState(u);
+  if(s.status==='idle') return alert('Unit tidak aktif');
+  const elapsedMs = s.status==='active' ? now()-s.start + s.acc : s.acc;
+  const minutes = Math.floor(elapsedMs/60000);
+  const calc = computePriceFromMinutes(minutes);
+  // save history record
+  const entry = {unit:u, name: s.name || '', start: (s.status==='active'? s.start : now()-elapsedMs), end: now(), minutes: minutes, pack: calc.pack, price: calc.price};
+  saveHistory(entry);
+  // set lastPrice and reset state to idle
+  s.lastPrice = calc.price;
+  s.status='idle'; s.start=0; s.acc=0;
+  saveState(u,s);
+  // show modal checkout
+  showModal(`<h3>Checkout — ${u}</h3><div style="font-weight:800;font-size:22px;margin-top:6px">${calc.pack} • ${fmtMoney(calc.price)}</div><div style="margin-top:8px" class="small-muted">Penyewa: ${entry.name || '-'}</div><div style="margin-top:8px" class="small-muted">Durasi: ${msToHMS(elapsedMs)}</div><div style="margin-top:12px;text-align:center"><button class="btn" onclick="closeModal(); renderGrid(); renderAdmin();">OK</button></div>`);
+  renderGrid(); renderAdmin();
+}
+
+// modal helpers
+const overlay = document.getElementById('overlay');
+const modal = document.getElementById('modal');
+function showModal(html){ overlay.style.display='block'; modal.style.display='block'; modal.innerHTML=html; }
+function closeModal(){ overlay.style.display='none'; modal.style.display='none'; modal.innerHTML=''; }
+overlay.addEventListener('click', closeModal);
+
+// ticker to update UI
+function tick(){
+  renderGrid(); // re-render grid to update timers and prices live
+  renderKPIs();
+}
+setInterval(tick,1000);
+
+// Admin
+const adminBtn = document.getElementById('btn-admin');
+const adminPanel = document.getElementById('adminPanel');
+adminBtn.addEventListener('click', ()=>{ adminPanel.style.display = adminPanel.style.display==='none'?'block':'none'; renderAdmin(); });
+
+function renderKPIs(){
+  const hist = loadHistory();
+  const cutoff = now() - (30*24*60*60*1000);
+  let totalMin = 0, income=0, cnt=0;
+  hist.forEach(h=>{ if(h.start >= cutoff){ totalMin += h.minutes; income += (h.price||0); cnt++; }});
+  const hours = Math.round((totalMin/60)*100)/100;
+  const kpis = document.getElementById('kpis');
+  kpis.innerHTML = `<div class="k"><div style="font-weight:800">${hours} hrs</div><div class="small-muted">Total durasi (30d)</div></div>
+                    <div class="k"><div style="font-weight:800">${fmtMoney(income)}</div><div class="small-muted">Pendapatan (30d)</div></div>
+                    <div class="k"><div style="font-weight:800">${cnt}</div><div class="small-muted">Transaksi</div></div>`;
+}
+
+function renderAdmin(){
+  renderKPIs();
+  const hist = loadHistory();
+  const tbody = document.querySelector('#historyTable tbody');
+  tbody.innerHTML='';
+  hist.slice(0,200).forEach(h=>{
+    const tr = document.createElement('tr');
+    const date = new Date(h.start).toLocaleString();
+    const durH = Math.round((h.minutes/60)*100)/100;
+    tr.innerHTML = `<td>${date}</td><td>${h.unit}</td><td>${h.name||'-'}</td><td>${h.pack}</td><td>${durH}</td><td>${fmtMoney(h.price)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// export & controls
+document.getElementById('exportCsv').addEventListener('click', ()=>{
+  const hist = loadHistory();
+  let rows = [['Tanggal','Unit','Penyewa','Paket','DurasiMin','Harga']];
+  hist.forEach(h=> rows.push([new Date(h.start).toLocaleString(), h.unit, h.name, h.pack, h.minutes, h.price]));
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mantra21_history.csv'; a.click();
+});
+document.getElementById('clearHist').addEventListener('click', ()=>{ if(confirm('Hapus histori?')){ localStorage.removeItem(historyKey); renderAdmin(); alert('Histori dihapus'); } });
+document.getElementById('resetAll').addEventListener('click', ()=>{ if(confirm('Reset semua unit?')){ UNITS.forEach(u=> saveState(u,{status:'idle', start:0, acc:0, name:'', lastPrice:0})); renderGrid(); renderAdmin(); alert('Reset selesai'); } });
+
+// storage sync
+window.addEventListener('storage',(e)=>{ if(e.key && e.key.startsWith('mig21_bcast_')){ renderGrid(); renderAdmin(); } });
+
+// initial render
+renderGrid();
+renderAdmin();
+
+</script>
+</body>
+</html>
